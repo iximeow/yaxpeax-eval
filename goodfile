@@ -1,0 +1,18 @@
+-- build/test/evaluation via https://git.iximeow.net/build-o-tron
+
+if not Build.environment.has("rustup")
+then
+  Build.error("i don't know i want to handle dependencies yet")
+end
+
+Build.run({"cargo", "build"}, {step="build"})
+Build.run({"cargo", "test"}, {step="test", name="test stdlib/fmt"})
+Build.run({"cargo", "run", "--", "--regs", "rax=4,rcx=5,rip=0x123456789a,eflags=0x206", "03c133c9"})
+
+-- how long does it take to actually run this thing?
+bench_start = Build.now_ms()
+
+Build.run({"./yaxeval", "--regs", "rax=4,rcx=5,rip=0x123456789a,eflags=0x206", "03c133c9"}, {cwd="target/debug"})
+
+bench_end = Build.now_ms()
+Build.metric("simple runtime (ms)", bench_end - bench_start)
